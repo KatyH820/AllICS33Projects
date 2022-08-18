@@ -1,0 +1,6 @@
+brush:Irvine:3
+comb:Irvine:2:Newport:1
+wallet:Irvine:2:Tustin:3
+stapler:Newport:0
+keychain:Tustin:3
+pencil:Tustin:4

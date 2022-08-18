@@ -1,0 +1,7 @@
+bob:carol:ted:alice
+carol:ted:alice:bob
+ted:alice:bob:carol
+alice:bob:carol:ted
+alice:out
+out:alice
+ted:ted

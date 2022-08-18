@@ -1,0 +1,142 @@
+# Setup
+c-->from imp import reload
+c-->import exam
+c-->reload(exam)
+c-->from exam import Graph, GraphError
+
+# Test __setitem__
+c-->g = Graph()
+==-->g.edges-->{}
+c-->g['a'] = 'c'
+==-->g.edges-->{'a': [{'c'},set()], 'c': [set(),{'a'}]}
+c-->g['b'] = 'c'
+==-->g.edges-->{'a': [{'c'},set()], 'b': [{'c'}, set()], 'c': [set(),{'a','b'}]}
+c-->g['b'] = 'd'
+==-->g.edges-->{'a': [{'c'},set()], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [set(),{'b'}]}
+c-->g['d'] = 'a'
+==-->g.edges-->{'a': [{'c'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [{'a'},{'b'}]}
+c-->g['a'] = 'd'
+==-->g.edges-->{'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [{'a'},{'a','b'}]}
+c-->g['d'] = 'c'
+==-->g.edges-->{'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}]}
+c-->g['e'] = None
+==-->g.edges-->{'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(), set()]}
+^-->g[1] = 'a'-->GraphError
+^-->g['a'] = 2-->GraphError
+
+# Test __getitem__
+c-->g = Graph()
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+==-->g['a']-->{'c','d'}
+==-->g['b']-->{'c','d'}
+==-->g['c']-->set()
+==-->g['d']-->{'a','c'}
+==-->g['e']-->set()
+==-->[g['a',n] for n in sorted(g.edges)]-->[False,False,True,True,False]
+==-->[g['b',n] for n in sorted(g.edges)]-->[False,False,True,True,False]
+==-->[g['c',n] for n in sorted(g.edges)]-->[False,False,False,False,False]
+==-->[g['d',n] for n in sorted(g.edges)]-->[True,False,True,False,False]
+==-->[g['e',n] for n in sorted(g.edges)]-->[False,False,False,False,False]
+^-->g[1]-->GraphError
+^-->g['z']-->GraphError
+^-->g['y','z']-->GraphError
+^-->g['a','b','c']-->GraphError
+
+# Test len
+c-->g.edges = {}
+==-->len(g)-->0
+c-->g.edges = {'a': [{'c'},set()], 'c': [set(),{'a'}]}
+==-->len(g)-->1
+c-->g.edges = {'a': [{'c'},set()], 'b': [{'c'}, set()], 'c': [set(),{'a','b'}]}
+==-->len(g)-->2
+c-->g.edges = {'a': [{'c'},set()], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [set(),{'b'}]}
+==-->len(g)-->3
+c-->g.edges = {'a': [{'c'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [{'a'},{'b'}]}
+==-->len(g)-->4
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [{'a'},{'a','b'}]}
+==-->len(g)-->5
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}]}
+==-->len(g)-->6
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+==-->len(g)-->6
+
+# Test __call__
+c-->g = Graph()
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+==-->g('a')-->{'d'}
+==-->g('b')-->set()
+==-->g('c')-->{'a','b','d'}
+==-->g('d')-->{'a','b'}
+==-->g('e')-->set()
+^-->g(1)-->GraphError
+^-->g('z')-->GraphError
+
+# Test degree
+c-->g = Graph()
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+==-->g.degree('a')-->3
+==-->g.degree('b')-->2
+==-->g.degree('c')-->3
+==-->g.degree('d')-->4
+==-->g.degree('e')-->0
+^-->g.degree(1)-->GraphError
+^-->g.degree('x')-->GraphError
+
+# Test __contains__
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+==-->[x in g for x in 'zabcdez']-->[False,True,True,True,True,True,False]
+==-->[('a',d) in g  for d in 'abcdez']-->[False,False,True,True,False,False]
+==-->[('b',d) in g  for d in 'abcdez']-->[False,False,True,True,False,False]
+==-->[('c',d) in g  for d in 'abcdez']-->[False,False,False,False,False,False]
+==-->[('d',d) in g  for d in 'abcdez']-->[True,False,True,False,False,False]
+==-->[('e',d) in g  for d in 'abcdez']-->[False,False,False,False,False,False]
+==-->[('z',d) in g  for d in 'abcdez']-->[False,False,False,False,False,False]
+
+# Test load
+c-->g = Graph()
+c-->g.load(open("graph0.txt"))
+==-->g.edges-->{'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+c-->g.load(open("graph1.txt"))
+==-->g.edges-->{'bob': [{'alice', 'ted', 'carol'}, {'alice', 'ted', 'carol'}], 'carol': [{'alice', 'ted', 'bob'}, {'alice', 'ted', 'bob'}], 'ted': [{'alice', 'ted', 'carol', 'bob'}, {'alice', 'ted', 'carol', 'bob'}], 'alice': [{'out', 'ted', 'carol', 'bob'}, {'out', 'ted', 'carol', 'bob'}], 'out': [{'alice'}, {'alice'}]}
+
+# Test __iter__
+c-->g = Graph()
+c-->g.edges = {'a': [{'b','c'},set()], 'b': [set(), {'a'}], 'c': [{'d'},{'a'}], 'd': [set(),{'c'}]}
+e-->[t for t in g]-->[('a', 'b'), ('a', 'c'), ('c', 'd')]
+c-->g = Graph()
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+e-->[t for t in g]-->[('b', 'c'), ('b', 'd'), ('a', 'c'), ('a', 'd'), ('d', 'a'), ('d', 'c')]
+c-->g = Graph()
+c-->g.edges = {'a': [{'b'},{'f'}], 'b': [{'c'}, {'a'}], 'c': [{'d'}, {'b'}], 'd': [{'e'}, {'c'}], 'e': [{'f'}, {'d'}], 'f': [{'a'}, {'e'}]}
+e-->[t for t in g]-->[('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e'), ('e', 'f'), ('f', 'a')]
+
+# Test <=
+c-->g1 = Graph()
+c-->g1.edges = {'a': [{'c'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [{'a'},{'b'}]}
+c-->g2 = Graph()
+c-->g2.edges = {'a': [{'c'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'b'}]}
+c-->g3 = Graph()
+c-->g3.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+==-->g1 <= g1 and g2 <= g2 and g3 <= g3-->True
+==-->g1 <= g2-->True
+==-->g2 <= g3-->True
+c-->g1.edges = {'a': [{'c'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b'}], 'd': [{'a'},{'b'}], 'f':[set(),set()]}
+==-->g1 <= g2-->False
+c-->g2.edges = {'a': [{'b','c'},{'d'}], 'b': [{'c','d'}, {'a'}], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'b'}]}
+==-->g2 <= g3-->False
+
+# Test __delitem__
+c-->g = Graph()
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+c-->del g['a','c']
+==-->g.edges-->{'a': [{'d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+c-->del g['b','d']
+==-->g.edges-->{'a': [{'d'},{'d'}], 'b': [{'c'}, set()], 'c': [set(),{'b','d'}], 'd': [{'a','c'},{'a'}], 'e': [set(),set()]}
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+c-->del g['c']
+==-->g.edges-->{'a': [{'d'},{'d'}], 'b': [{'d'}, set()], 'd': [{'a'},{'a','b'}], 'e': [set(),set()]}
+c-->del g['a']
+==-->g.edges-->{'b': [{'d'}, set()], 'd': [set(),{'b'}], 'e': [set(),set()]}
+c-->g.edges = {'a': [{'c','d'},{'d'}], 'b': [{'c','d'}, set()], 'c': [set(),{'a','b','d'}], 'd': [{'a','c'},{'a','b'}], 'e': [set(),set()]}
+^-->del g['x']-->GraphError
+^-->del g['a','x']-->GraphError
